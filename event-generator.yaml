@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-generator-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: event-generator
+  template:
+    metadata:
+      labels:
+        app: event-generator
+    spec:
+      containers:
+        - name: event-generator
+          image: event-generator-service:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8082
+          env:
+            - name: APP_KAFKA_BOOTSTRAP_SERVERS
+              value: "my-cluster-kafka-bootstrap.kafka:9092"
+            - name: APP_KAFKA_TOPIC
+              value: "user-events"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-generator-service
+  namespace: default
+spec:
+  selector:
+    app: event-generator
+  ports:
+    - port: 8082
+      targetPort: 8082
+      protocol: TCP
